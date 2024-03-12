@@ -31,8 +31,9 @@ export class PoetryContentService {
         }
     }
 
-    getPoetryLines(poetryMeta: PoetryMeta): Promise<PoetryLine[]> {
+    async getPoetryLines(poetryMeta: PoetryMeta): Promise<PoetryLine[]> {
         console.log('poetryMeta1111: ', poetryMeta);
+        console.log('poetryMeta.id: ', poetryMeta.id);
 
         try {
             const poetryLines = this.poetryLineRepository.find({
@@ -43,7 +44,7 @@ export class PoetryContentService {
                     seq: 'ASC'
                 }
             });
-            console.log('poetryLines11111: ', poetryLines);
+            // console.log('poetryLines11111: ', await poetryLines);
             return poetryLines;
         } catch (error) {
             console.log('error: ', error);
@@ -60,12 +61,12 @@ export class PoetryContentService {
     async generateQuiz(): Promise<PoetryQuiz> {
 
         // 随机查询一首诗的元信息
-        const poetryMeta = await this.findOneRandom();
-        console.log('poetryMeta: ', poetryMeta);
-        const poetryLines = this.getPoetryLines(poetryMeta);
-        console.log('poetryLines: ', poetryLines);
+        const poetryMetas = await this.findOneRandom();
+        console.log('poetryMeta: ', poetryMetas);
+        const poetryLines = await this.getPoetryLines(poetryMetas[0]);
+        // console.log('poetryLines: ', poetryLines);
         const poetryQuiz = new PoetryQuiz();
-        poetryQuiz.poetryMeta = poetryMeta;
+        poetryQuiz.poetryMeta = poetryMetas[0];
 
         // 从poetryContents中随机取两条连续的诗句作为问题
         const index = Math.floor(Math.random() * ((await poetryLines).length - 1));
