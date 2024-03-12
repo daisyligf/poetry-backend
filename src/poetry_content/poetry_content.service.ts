@@ -22,7 +22,7 @@ export class PoetryContentService {
     // 执行这条sql语句 SELECT id FROM poetry_meta ORDER BY RAND() LIMIT 1; 
     async findOneRandom(): Promise<PoetryMeta> {
         try {
-            const poetryMeta = this.poetryMetaRepository.query(`SELECT * FROM poetry_meta ORDER BY RAND() LIMIT 1`);
+            const poetryMeta = await this.poetryMetaRepository.query(`SELECT * FROM poetry_meta ORDER BY RAND() LIMIT 1`);
             console.log('poetryMeta: ', poetryMeta);
             return poetryMeta;
         } catch (error) {
