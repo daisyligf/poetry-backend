@@ -7,7 +7,7 @@ import {
     Timestamp,
 } from 'typeorm';
 
-@Entity()
+@Entity("poetry_meta")
 export class PoetryMeta {
     @PrimaryGeneratedColumn()
     id: number;

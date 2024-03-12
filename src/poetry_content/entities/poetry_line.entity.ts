@@ -7,18 +7,18 @@ import {
     Timestamp,
 } from 'typeorm';
 
-@Entity()
-export class PoetryContent {
+@Entity("poetry_line")
+export class PoetryLine {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @Column({ type: 'int', name: 'poetry_meta_id' })
+    @Column({name: 'poetry_meta_id' })
     poetryMetaId: number;
 
-    @Column({ type: 'int', name: 'seq' })
+    @Column({name: 'seq' })
     seq: number;
 
-    @Column({type:'varchar', length: 500 })
+    @Column({length: 500 })
     content: string;
 
     @CreateDateColumn({ name: 'create_time'})

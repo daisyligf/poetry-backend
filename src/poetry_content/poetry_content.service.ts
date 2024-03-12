@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { In, Int32, Repository } from 'typeorm';
-import { PoetryContent } from './entities/poetry_content.entity';
+import { PoetryLine } from './entities/poetry_line.entity';
 import { PoetryMeta } from './entities/poetry_meta.entity';
 import { PoetryQuiz } from './models/poetry_quiz.model';
 
@@ -9,39 +9,50 @@ import { PoetryQuiz } from './models/poetry_quiz.model';
 export class PoetryContentService {
 
     constructor(
-        @InjectRepository(PoetryContent) private readonly poetryContent: Repository<PoetryContent>,
-        @InjectRepository(PoetryMeta) private readonly poetryMeta: Repository<PoetryMeta>,
+        @InjectRepository(PoetryLine) 
+        private poetryLineRepository: Repository<PoetryLine>,
+        @InjectRepository(PoetryMeta) 
+        private poetryMetaRepository: Repository<PoetryMeta>,
     ) {}
 
-    async findAll(): Promise<PoetryContent[]> {
-        return await this.poetryContent.find();
+    findAll(): Promise<PoetryLine[]> {
+        return this.poetryLineRepository.find();
     }
 
     // 执行这条sql语句 SELECT id FROM poetry_meta ORDER BY RAND() LIMIT 1; 
     async findOneRandom(): Promise<PoetryMeta> {
-        const poetryMeta = await this.poetryMeta.query(`SELECT * FROM poetry_meta ORDER BY RAND() LIMIT 1`);
-        return poetryMeta[0];
+        try {
+            const poetryMeta = this.poetryMetaRepository.query(`SELECT * FROM poetry_meta ORDER BY RAND() LIMIT 1`);
+            console.log('poetryMeta: ', poetryMeta);
+            return poetryMeta;
+        } catch (error) {
+            console.log('error: ', error);
+            throw error;
+        }
     }
 
-    async getPoetryContents(poetryMeta: PoetryMeta): Promise<PoetryContent[]> {
+    getPoetryLines(poetryMeta: PoetryMeta): Promise<PoetryLine[]> {
+        console.log('poetryMeta1111: ', poetryMeta);
 
-        // 根据元信息查询诗的内容，并把诗的内容保存到poetryContents数组中
-        const poetryContents = await this.poetryContent.find({
-            where: {
-                poetryMetaId: poetryMeta.id
-            },
-            order: {
-                seq: 'ASC'
-            }
-        });
-
-
-        // 返回poetryContents数组
-        return poetryContents;
+        try {
+            const poetryLines = this.poetryLineRepository.find({
+                where: {
+                    poetryMetaId: poetryMeta.id
+                },
+                order: {
+                    seq: 'ASC'
+                }
+            });
+            console.log('poetryLines11111: ', poetryLines);
+            return poetryLines;
+        } catch (error) {
+            console.log('error: ', error);
+            throw error;
+        }
     }
 
-    async findRandomPoetryContent(size: number): Promise<PoetryContent[]> {
-        const poetryContents = await this.poetryContent.query(`SELECT * FROM poetry_content ORDER BY RAND() LIMIT ${size}`);
+    async findRandomPoetryContent(size: number): Promise<PoetryLine[]> {
+        const poetryContents = this.poetryLineRepository.query(`SELECT * FROM poetry_line ORDER BY RAND() LIMIT ${size}`);
         return poetryContents;
     }
 
@@ -51,17 +62,17 @@ export class PoetryContentService {
         // 随机查询一首诗的元信息
         const poetryMeta = await this.findOneRandom();
         console.log('poetryMeta: ', poetryMeta);
-        const poetryContents = this.getPoetryContents(poetryMeta);
-        console.log('poetryContents: ', poetryContents);
+        const poetryLines = this.getPoetryLines(poetryMeta);
+        console.log('poetryLines: ', poetryLines);
         const poetryQuiz = new PoetryQuiz();
         poetryQuiz.poetryMeta = poetryMeta;
 
         // 从poetryContents中随机取两条连续的诗句作为问题
-        const index = Math.floor(Math.random() * ((await poetryContents).length - 1));
-        console.log('index: ', index, 'length: ', (await poetryContents).length);
-        const content = (await poetryContents)[index];
+        const index = Math.floor(Math.random() * ((await poetryLines).length - 1));
+        console.log('index: ', index, 'length: ', (await poetryLines).length);
+        const content = (await poetryLines)[index];
         const first = content.content;
-        const next = (await poetryContents)[index + 1].content;
+        const next = (await poetryLines)[index + 1].content;
 
         // 随机将两条诗句中的一个作为问题，也就是line，并且设置answerNext为true/false（如果line是前一句，则answerNext为true，否则为false）
         if (Math.random() > 0.5) {
